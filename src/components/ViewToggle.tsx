@@ -13,7 +13,7 @@ export default function ViewToggle({
   onViewModeChange,
 }: ViewToggleProps) {
   return (
-    <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1 relative -top-5">
+    <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1 relative md:-top-5">
       <Button
         variant={viewMode === "list" ? "default" : "ghost"}
         size="sm"

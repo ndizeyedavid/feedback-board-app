@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  feedbacks Feedback[]
+  comments  Comment[]
+  upvotes   Upvote[]
+
+  @@map("users")
+}
+
+model Feedback {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  category    Category
+  upvoteCount Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  authorId    String
+
+  // Relations
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments Comment[]
+  upvotes  Upvote[]
+
+  @@map("feedbacks")
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  authorId   String
+  feedbackId String
+
+  // Relations
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  feedback Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Upvote {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  userId     String
+  feedbackId String
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedback Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+
+  // Ensure one upvote per user per feedback
+  @@unique([userId, feedbackId])
+  @@map("upvotes")
+}
+
+enum Category {
+  GAMEPLAY
+  STORY
+  GRAPHICS
+  MULTIPLAYER
+  MECHANICS
+  WORLD
+}

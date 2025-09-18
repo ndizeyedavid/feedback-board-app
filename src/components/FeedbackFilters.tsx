@@ -34,7 +34,7 @@ export default function FeedbackFilters({
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col md:flex-row gap-2">
           <Select value={selectedCategory} onValueChange={onCategoryChange}>
             <SelectTrigger className="w-[180px] h-11">
               <div className="flex items-center gap-2">
@@ -44,10 +44,12 @@ export default function FeedbackFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="bug">Bug Report</SelectItem>
-              <SelectItem value="feature"> New Feature</SelectItem>
-              <SelectItem value="balance">Balance Change</SelectItem>
-              <SelectItem value="content">Content Request</SelectItem>
+              <SelectItem value="gameplay">Gameplay Mechanics</SelectItem>
+              <SelectItem value="story">Story & Characters</SelectItem>
+              <SelectItem value="graphics">Graphics & Visuals</SelectItem>
+              <SelectItem value="multiplayer">Multiplayer Features</SelectItem>
+              <SelectItem value="mechanics">Game Mechanics</SelectItem>
+              <SelectItem value="world">Open World Design</SelectItem>
             </SelectContent>
           </Select>
 

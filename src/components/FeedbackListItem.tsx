@@ -13,18 +13,26 @@ interface FeedbackListItemProps {
 }
 
 const categoryConfig = {
-  bug: { label: "Bug Report", color: "bg-red-100 text-red-800 border-red-200" },
-  feature: {
-    label: "New Feature",
-    color: "bg-blue-100 text-blue-800 border-blue-200",
+  gameplay: { label: "Gameplay Mechanics", color: "bg-blue-100 text-blue-800 border-blue-200" },
+  story: {
+    label: "Story & Characters",
+    color: "bg-purple-100 text-purple-800 border-purple-200",
   },
-  balance: {
-    label: "Balance Change",
+  graphics: {
+    label: "Graphics & Visuals",
+    color: "bg-green-100 text-green-800 border-green-200",
+  },
+  multiplayer: {
+    label: "Multiplayer Features",
+    color: "bg-red-100 text-red-800 border-red-200",
+  },
+  mechanics: {
+    label: "Game Mechanics",
     color: "bg-yellow-100 text-yellow-800 border-yellow-200",
   },
-  content: {
-    label: "Content Request",
-    color: "bg-green-100 text-green-800 border-green-200",
+  world: {
+    label: "Open World Design",
+    color: "bg-cyan-100 text-cyan-800 border-cyan-200",
   },
 };
 
@@ -39,9 +47,9 @@ export default function FeedbackListItem({
 
   return (
     <div className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-all duration-200">
-      <div className="flex items-start gap-4">
+      <div className="flex flex-col md:flex-row items-start gap-4">
         {/* Upvote Section */}
-        <div className="flex flex-col items-center gap-1 min-w-[60px]">
+        <div className="flex flex-col items-center gap-1 mx-auto relative left-[95px] md:mx-0 md:left-0 min-w-[60px]">
           <Button
             variant={hasUpvoted ? "default" : "outline"}
             size="sm"
@@ -57,7 +65,7 @@ export default function FeedbackListItem({
 
         {/* Content Section */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-4 mb-3">
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-foreground mb-2 leading-tight">
                 {feedback.title}

@@ -20,13 +20,13 @@ export default function CommentItem({ comment }: CommentItemProps) {
         </span>
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex flex-col md:flex-row md:items-center md:gap-2 mb-1">
           <span className="font-medium text-sm text-foreground">
             {comment.author}
           </span>
           <span className="text-xs text-muted-foreground">{formattedDate}</span>
         </div>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        <p className="text-sm pt-2 md:pt-0 text-muted-foreground leading-relaxed">
           {comment.content}
         </p>
       </div>

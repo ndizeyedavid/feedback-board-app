@@ -19,51 +19,66 @@ import { toast } from "sonner";
 import ViewToggle, { ViewMode } from "@/components/ViewToggle";
 import FeedbackListItem from "@/components/FeedbackListItem";
 import Image from "next/image";
+import { HexagonBackground } from "@/components/BG/hexagon-bg";
+import { useFeedback } from "@/hooks/useFeedback";
+import { ApiFeedback } from "../../lib/api";
 
 export default function page() {
   // State management
-  const [feedback, setFeedback] = useState<Feedback[]>([]);
-
-  const [upvotes, setUpvotes] = useState<Record<string, boolean>>({});
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortOption>("recent");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [currentUser] = useState("GuestUser"); // Simple user management
+
+  // Use the custom hook for API integration
+  const {
+    feedback,
+    loading,
+    error,
+    upvotedIds,
+    createFeedback,
+    toggleUpvote,
+    addComment,
+  } = useFeedback({
+    category: selectedCategory,
+    search: searchTerm,
+    sortBy,
+    username: currentUser,
+  });
 
   // Handlers
-  const handleSubmitFeedback = (data: FeedbackFormData) => {
-    const newFeedback: Feedback = {
-      id: Date.now().toString(),
-      title: data.title,
-      description: data.description,
-      category: data.category,
-      upvotes: 0,
-      createdAt: new Date(),
-      comments: [],
-    };
+  const handleSubmitFeedback = async (data: FeedbackFormData) => {
+    try {
+      await createFeedback(data, currentUser);
+      setIsFormOpen(false);
 
-    setFeedback((prev) => [newFeedback, ...prev]);
-    setIsFormOpen(false);
+      // Trigger confetti celebration
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#9333ea", "#3b82f6", "#06b6d4", "#10b981"],
+      });
 
-    // Trigger confetti celebration
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ["#9333ea", "#3b82f6", "#06b6d4", "#10b981"],
-    });
-
-    // Show success toast
-    toast.success("🎮 Feedback submitted successfully!", {
-      description:
-        "Your feedback has been added to the community board. Thanks for helping improve the game!",
-      duration: 4000,
-    });
+      // Show success toast
+      toast.success("🎮 Feedback submitted successfully!", {
+        description:
+          "Your feedback has been added to the community board. Thanks for helping improve the game!",
+        duration: 4000,
+      });
+    } catch (error) {
+      toast.error("❌ Failed to submit feedback", {
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+        duration: 4000,
+      });
+    }
   };
 
-  const handleUpvote = (id: string) => {
-    if (upvotes[id]) {
+  const handleUpvote = async (id: string) => {
+    if (upvotedIds.has(id)) {
       toast.info("⚡ Already upvoted!", {
         description: "You've already upvoted this feedback.",
         duration: 2000,
@@ -71,67 +86,53 @@ export default function page() {
       return;
     }
 
-    setUpvotes((prev) => ({ ...prev, [id]: true }));
-    setFeedback((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, upvotes: item.upvotes + 1 } : item
-      )
-    );
-
-    toast.success("👍 Upvoted!", {
-      description:
-        "Your vote has been counted. Thanks for supporting this feedback!",
-      duration: 2000,
-    });
+    try {
+      await toggleUpvote(id, currentUser);
+      toast.success("👍 Upvoted!", {
+        description:
+          "Your vote has been counted. Thanks for supporting this feedback!",
+        duration: 2000,
+      });
+    } catch (error) {
+      toast.error("❌ Failed to upvote", {
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+        duration: 2000,
+      });
+    }
   };
 
-  const handleAddComment = (
+  const handleAddComment = async (
     feedbackId: string,
     author: string,
     content: string
   ) => {
-    const newComment = {
-      id: `c${Date.now()}`,
-      author,
-      content,
-      createdAt: new Date(),
-    };
-
-    setFeedback((prev) =>
-      prev.map((item) =>
-        item.id === feedbackId
-          ? { ...item, comments: [...item.comments, newComment] }
-          : item
-      )
-    );
-
-    toast.success("💬 Comment added!", {
-      description: `Your comment has been posted as ${author}. Join the discussion!`,
-      duration: 3000,
-    });
+    try {
+      await addComment(feedbackId, content.trim(), author);
+      toast.success("💬 Comment added!", {
+        description: `Your comment has been posted as ${author}. Join the discussion!`,
+        duration: 3000,
+      });
+    } catch (error) {
+      toast.error("❌ Failed to add comment", {
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+        duration: 3000,
+      });
+    }
   };
 
-  // Filtered and sorted feedback
-  const filteredAndSortedFeedback = useMemo(() => {
-    let filtered = feedback.filter((item) => {
-      const matchesSearch =
-        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "all" || item.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-
-    return filtered.sort((a, b) => {
-      if (sortBy === "recent") {
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-      } else {
-        return b.upvotes - a.upvotes;
-      }
-    });
-  }, [feedback, searchTerm, selectedCategory, sortBy]);
+  // Convert API feedback to component format
+  const convertedFeedback = useMemo(() => {
+    return feedback.map((item) => ({
+      ...item,
+      upvotes: item.upvoteCount,
+      comments: item.comments.map((comment) => ({
+        ...comment,
+        author: comment.author.username,
+      })),
+    }));
+  }, [feedback]);
 
   return (
     <>
@@ -139,8 +140,8 @@ export default function page() {
         <div className="container mx-auto px-4 py-8 max-w-7xl">
           {/* Header */}
           <div className="text-center mb-12 animate-fade-in mt-10">
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-3 mb-6">
+              <div className="size-16 rounded-2xl flex items-center justify-center shadow-lg">
                 <Image
                   src="/logo.png"
                   alt="GTA VI LOGO"
@@ -149,9 +150,11 @@ export default function page() {
                   className="object-contain p-1"
                 />
               </div>
-              <h1 className="text-5xl font-bold">GTA VI Feedback Board</h1>
+              <h1 className="text-2xl md:text-5xl font-bold">
+                GTA VI Feedback Board
+              </h1>
             </div>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-sm md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               Level up our game together! Share bugs, request features, suggest
               balance changes, and vote on what the community wants most. Your
               feedback shapes the adventure.
@@ -184,6 +187,12 @@ export default function page() {
                   </div>
                 </DialogContent>
               </Dialog>
+              {feedback.length === 0 && (
+                <Button onClick={() => setIsFormOpen(true)} variant="outline">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Submit First Feedback
+                </Button>
+              )}
             </div>
           </div>
 
@@ -202,7 +211,7 @@ export default function page() {
                   onCategoryChange={setSelectedCategory}
                   onSortChange={setSortBy}
                   totalCount={feedback.length}
-                  filteredCount={filteredAndSortedFeedback.length}
+                  filteredCount={feedback.length}
                 />
               </div>
               <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
@@ -211,7 +220,22 @@ export default function page() {
 
           {/* Feedback List */}
           <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            {filteredAndSortedFeedback.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading feedback...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-16">
+                <p className="text-destructive mb-4">Error: {error}</p>
+                <Button
+                  onClick={() => window.location.reload()}
+                  variant="outline"
+                >
+                  Try Again
+                </Button>
+              </div>
+            ) : convertedFeedback.length === 0 ? (
               <div className="text-center py-16">
                 <div className="size-28 flex items-center justify-center mx-auto mb-6 animate-scale-in">
                   <Image
@@ -232,45 +256,20 @@ export default function page() {
                     ? "Be the first player to share feedback and help shape the game!"
                     : "Try adjusting your search or category filters to find what you're looking for."}
                 </p>
-                {feedback.length === 0 && (
-                  <Button onClick={() => setIsFormOpen(true)} variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Submit First Feedback
-                  </Button>
-                )}
-              </div>
-            ) : viewMode === "card" ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filteredAndSortedFeedback.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="animate-fade-in"
-                    style={{ animationDelay: `${0.1 * (index % 6)}s` }}
-                  >
-                    <FeedbackCard
-                      feedback={item}
-                      hasUpvoted={!!upvotes[item.id]}
-                      onUpvote={handleUpvote}
-                      onAddComment={handleAddComment}
-                    />
-                  </div>
-                ))}
               </div>
             ) : (
-              <div className="space-y-4">
-                {filteredAndSortedFeedback.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="animate-fade-in"
-                    style={{ animationDelay: `${0.05 * (index % 10)}s` }}
-                  >
-                    <FeedbackListItem
-                      feedback={item}
-                      hasUpvoted={!!upvotes[item.id]}
+              <div className="space-y-6">
+                {convertedFeedback.map((feedbackItem) => (
+                  <>
+                    <div>mellwo</div>
+                    {/* <FeedbackCard
+                      key={feedbackItem.id}
+                      feedback={feedbackItem}
+                      upvotedIds={upvotedIds}
                       onUpvote={handleUpvote}
                       onAddComment={handleAddComment}
-                    />
-                  </div>
+                    /> */}
+                  </>
                 ))}
               </div>
             )}

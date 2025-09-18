@@ -9,7 +9,7 @@ export interface Feedback {
   id: string;
   title: string;
   description: string;
-  category: 'bug' | 'feature' | 'balance' | 'content';
+  category: 'gameplay' | 'story' | 'graphics' | 'multiplayer' | 'mechanics' | 'world';
   upvotes: number;
   createdAt: Date;
   comments: Comment[];
@@ -18,7 +18,7 @@ export interface Feedback {
 export interface FeedbackFormData {
   title: string;
   description: string;
-  category: 'bug' | 'feature' | 'balance' | 'content';
+  category: 'gameplay' | 'story' | 'graphics' | 'multiplayer' | 'mechanics' | 'world';
 }
 
 export type SortOption = 'recent' | 'upvotes';

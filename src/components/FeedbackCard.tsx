@@ -6,30 +6,39 @@ import { FeedbackCardProps, CategoryInfo } from "@/types/feedback";
 import { cn } from "@/lib/utils";
 import CommentSection from "./CommentSection";
 
-export default function FeedbackCard({ feedback, hasUpvoted, onUpvote, onAddComment }: FeedbackCardProps) {
+export default function FeedbackCard({
+  feedback,
+  hasUpvoted,
+  onUpvote,
+  onAddComment,
+}: FeedbackCardProps) {
   // Category information mapping
   const getCategoryInfo = (category: string): CategoryInfo => {
     switch (category) {
-      case 'bug':
-        return { label: 'Bug Report', emoji: '🐛', variant: 'destructive' };
-      case 'feature':
-        return { label: 'New Feature', emoji: '⚡', variant: 'default' };
-      case 'balance':
-        return { label: 'Balance Change', emoji: '⚖️', variant: 'secondary' };
-      case 'content':
-        return { label: 'Content Request', emoji: '🎮', variant: 'outline' };
+      case "gameplay":
+        return { label: "Gameplay Mechanics", emoji: "", variant: "default" };
+      case "story":
+        return { label: "Story & Characters", emoji: "", variant: "secondary" };
+      case "graphics":
+        return { label: "Graphics & Visuals", emoji: "", variant: "outline" };
+      case "multiplayer":
+        return { label: "Multiplayer Features", emoji: "", variant: "destructive" };
+      case "mechanics":
+        return { label: "Game Mechanics", emoji: "", variant: "secondary" };
+      case "world":
+        return { label: "Open World Design", emoji: "", variant: "outline" };
       default:
-        return { label: 'General', emoji: '💡', variant: 'outline' };
+        return { label: "General", emoji: "", variant: "outline" };
     }
   };
 
   const categoryInfo = getCategoryInfo(feedback.category);
-  
+
   // Format date
-  const formattedDate = new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
+  const formattedDate = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   }).format(new Date(feedback.createdAt));
   return (
     <Card className="group hover:shadow-hover transition-all duration-300 border-border/50 bg-gradient-to-br from-card to-card/50">
@@ -39,7 +48,7 @@ export default function FeedbackCard({ feedback, hasUpvoted, onUpvote, onAddComm
             <h3 className="font-semibold text-card-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
               {feedback.title}
             </h3>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col md:flex-row md:items-center gap-2">
               <Badge
                 variant={categoryInfo.variant}
                 className="text-xs font-medium"
@@ -82,10 +91,12 @@ export default function FeedbackCard({ feedback, hasUpvoted, onUpvote, onAddComm
         <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
           {feedback.description}
         </p>
-        
-        <CommentSection 
+
+        <CommentSection
           comments={feedback.comments}
-          onAddComment={(author, content) => onAddComment(feedback.id, author, content)}
+          onAddComment={(author, content) =>
+            onAddComment(feedback.id, author, content)
+          }
         />
       </CardContent>
     </Card>

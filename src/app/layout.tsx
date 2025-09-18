@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gaming Feedback Board | Share Your Game Experience",
-  description: "A community-driven feedback platform for gamers. Report bugs, request features, suggest balance changes, and help shape the future of your favorite games.",
+  title: "GTA VI Feedback Board",
+  description:
+    "A community-driven feedback platform for GTA VI. Request features, suggest balance changes, and help shape the future of your favorite game.",
 };
 
 export default function RootLayout({
