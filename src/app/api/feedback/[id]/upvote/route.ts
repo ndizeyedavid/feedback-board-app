@@ -9,12 +9,12 @@ const upvoteSchema = z.object({
 // POST /api/feedback/[id]/upvote - Toggle upvote on feedback
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json()
     const { username } = upvoteSchema.parse(body)
-    const feedbackId = params.id
+    const { id: feedbackId } = await params
 
     // Find or create user
     let user = await prisma.user.findUnique({
