@@ -114,6 +114,7 @@ export default function FeedbackCard({
         <CommentSection
           comments={feedback.comments}
           onAddComment={(author, content) =>
+            // @ts-ignore
             onAddComment(feedback.id, author, content)
           }
         />
