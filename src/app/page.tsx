@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Gamepad2, MessageSquare, Plus, Zap } from "lucide-react";
+import { Gamepad2, Loader2, MessageSquare, Plus, Zap } from "lucide-react";
 import { Feedback, FeedbackFormData, SortOption } from "@/types/feedback";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
@@ -222,7 +222,7 @@ export default function page() {
           <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
             {loading ? (
               <div className="text-center py-16">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <Loader2 className="animate-spin rounded-full h-12 w-12 text-primary mx-auto mb-4" />
                 <p className="text-muted-foreground">Loading feedback...</p>
               </div>
             ) : error ? (
@@ -257,19 +257,30 @@ export default function page() {
                     : "Try adjusting your search or category filters to find what you're looking for."}
                 </p>
               </div>
-            ) : (
-              <div className="space-y-6">
+            ) : viewMode === "card" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {convertedFeedback.map((feedbackItem) => (
-                  <>
-                    <div>mellwo</div>
-                    {/* <FeedbackCard
-                      key={feedbackItem.id}
-                      feedback={feedbackItem}
-                      upvotedIds={upvotedIds}
-                      onUpvote={handleUpvote}
-                      onAddComment={handleAddComment}
-                    /> */}
-                  </>
+                  <FeedbackCard
+                    key={feedbackItem.id}
+                    // @ts-ignore
+                    feedback={feedbackItem}
+                    upvotedIds={upvotedIds}
+                    onUpvote={handleUpvote}
+                    onAddComment={handleAddComment}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {convertedFeedback.map((feedbackItem) => (
+                  <FeedbackListItem
+                    key={feedbackItem.id}
+                    // @ts-ignore
+                    feedback={feedbackItem}
+                    // hasUpvoted={upvotedIds.includes(feedbackItem.id)}
+                    onUpvote={handleUpvote}
+                    onAddComment={handleAddComment}
+                  />
                 ))}
               </div>
             )}

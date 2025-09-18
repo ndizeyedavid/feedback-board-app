@@ -21,15 +21,17 @@ const createFeedbackSchema = z.object({
 });
 
 const querySchema = z.object({
-  category: z.string().optional(),
-  search: z.string().optional(),
-  sortBy: z.enum(["recent", "upvotes"]).optional().default("recent"),
+  category: z.string().nullable().optional(),
+  search: z.string().nullable().optional(),
+  sortBy: z.enum(["recent", "upvotes"]).nullable().optional().default("recent"),
   page: z
     .string()
+    .nullable()
     .optional()
     .transform((val) => (val ? parseInt(val) : 1)),
   limit: z
     .string()
+    .nullable()
     .optional()
     .transform((val) => (val ? parseInt(val) : 20)),
 });

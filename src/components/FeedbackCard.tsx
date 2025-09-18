@@ -22,7 +22,11 @@ export default function FeedbackCard({
       case "graphics":
         return { label: "Graphics & Visuals", emoji: "", variant: "outline" };
       case "multiplayer":
-        return { label: "Multiplayer Features", emoji: "", variant: "destructive" };
+        return {
+          label: "Multiplayer Features",
+          emoji: "",
+          variant: "destructive",
+        };
       case "mechanics":
         return { label: "Game Mechanics", emoji: "", variant: "secondary" };
       case "world":
@@ -32,7 +36,8 @@ export default function FeedbackCard({
     }
   };
 
-  const categoryInfo = getCategoryInfo(feedback.category);
+  // const categoryInfo = getCategoryInfo(feedback.category);
+  const categoryInfo = getCategoryInfo(feedback.category.toLocaleLowerCase());
 
   // Format date
   const formattedDate = new Intl.DateTimeFormat("en-US", {
