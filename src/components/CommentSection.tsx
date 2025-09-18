@@ -7,7 +7,7 @@ import CommentForm from "./CommentForm";
 
 interface CommentSectionProps {
   comments: Comment[];
-  onAddComment: (author: string, content: string) => void;
+  onAddComment: (author: string, content: string) => Promise<void>;
 }
 
 export default function CommentSection({
@@ -17,8 +17,8 @@ export default function CommentSection({
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCommentForm, setShowCommentForm] = useState(false);
 
-  const handleAddComment = (author: string, content: string) => {
-    onAddComment(author, content);
+  const handleAddComment = async (author: string, content: string) => {
+    await onAddComment(author, content);
     setShowCommentForm(false);
   };
 

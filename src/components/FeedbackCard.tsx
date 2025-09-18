@@ -1,10 +1,11 @@
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Loader2 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Button } from "./ui/button";
 import { FeedbackCardProps, CategoryInfo } from "@/types/feedback";
 import { cn } from "@/lib/utils";
 import CommentSection from "./CommentSection";
+import { useState } from "react";
 
 export default function FeedbackCard({
   feedback,
@@ -12,6 +13,7 @@ export default function FeedbackCard({
   onUpvote,
   onAddComment,
 }: FeedbackCardProps) {
+  const [isUpvoting, setIsUpvoting] = useState(false);
   // Category information mapping
   const getCategoryInfo = (category: string): CategoryInfo => {
     switch (category) {
@@ -69,24 +71,36 @@ export default function FeedbackCard({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onUpvote(feedback.id)}
-            disabled={hasUpvoted}
+            onClick={async () => {
+              if (isUpvoting) return;
+              try {
+                setIsUpvoting(true);
+                await onUpvote(feedback.id);
+              } finally {
+                setIsUpvoting(false);
+              }
+            }}
+            disabled={isUpvoting}
             className={cn(
-              "flex items-center gap-1 min-w-[60px] h-8 transition-all duration-200",
+              "flex items-center gap-1 min-w-[60px] h-8 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed",
               hasUpvoted
                 ? "bg-primary text-primary-foreground border-primary hover:bg-primary hover:text-primary-foreground"
                 : "hover:bg-primary/5 hover:border-primary/50 hover:text-primary"
             )}
           >
-            <ArrowUp
-              className={cn(
-                "h-3 w-3 transition-transform duration-200",
-                hasUpvoted
-                  ? "text-primary-foreground"
-                  : "text-muted-foreground",
-                hasUpvoted && "scale-110"
-              )}
-            />
+            {isUpvoting ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <ArrowUp
+                className={cn(
+                  "h-3 w-3 transition-transform duration-200",
+                  hasUpvoted
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground",
+                  hasUpvoted && "scale-110"
+                )}
+              />
+            )}
             <span className="text-xs font-medium">{feedback.upvotes}</span>
           </Button>
         </div>

@@ -187,12 +187,12 @@ export default function page() {
                   </div>
                 </DialogContent>
               </Dialog>
-              {feedback.length === 0 && (
+              {/* {feedback.length === 0 && (
                 <Button onClick={() => setIsFormOpen(true)} variant="outline">
                   <Plus className="h-4 w-4 mr-2" />
                   Submit First Feedback
                 </Button>
-              )}
+              )} */}
             </div>
           </div>
 

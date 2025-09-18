@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 import {
@@ -21,9 +21,12 @@ export default function FeedbackForm({ onSubmit, onClose }: FeedbackFormProps) {
     category: "gameplay"
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isSubmitting) return;
     
     if (!formData.title.trim()) {
       toast.error("❌ Title required", {
@@ -49,14 +52,21 @@ export default function FeedbackForm({ onSubmit, onClose }: FeedbackFormProps) {
       return;
     }
     
-    onSubmit(formData);
-    
-    // Reset form
-    setFormData({
-      title: "",
-      description: "",
-      category: "gameplay"
-    });
+    try {
+      setIsSubmitting(true);
+      await onSubmit(formData);
+      
+      // Reset form
+      setFormData({
+        title: "",
+        description: "",
+        category: "gameplay"
+      });
+    } catch (error) {
+      // Error handling is done in the parent component
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (field: keyof FeedbackFormData, value: string) => {
@@ -146,10 +156,20 @@ export default function FeedbackForm({ onSubmit, onClose }: FeedbackFormProps) {
 
         <Button
           type="submit"
-          className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+          disabled={isSubmitting}
+          className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Submit Feedback
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4 mr-2" />
+              Submit Feedback
+            </>
+          )}
         </Button>
       </form>
     </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageCircle, Send } from "lucide-react";
+import { MessageCircle, Send, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 import { Textarea } from "./ui/textarea";
@@ -7,7 +7,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
 interface CommentFormProps {
-  onSubmit: (author: string, content: string) => void;
+  onSubmit: (author: string, content: string) => Promise<void>;
   onCancel?: () => void;
 }
 
@@ -15,9 +15,12 @@ export default function CommentForm({ onSubmit, onCancel }: CommentFormProps) {
   const [author, setAuthor] = useState("");
   const [content, setContent] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isSubmitting) return;
 
     if (!author.trim()) {
       toast.error("❌ Name required", {
@@ -35,9 +38,16 @@ export default function CommentForm({ onSubmit, onCancel }: CommentFormProps) {
       return;
     }
 
-    onSubmit(author.trim(), content.trim());
-    setAuthor("");
-    setContent("");
+    try {
+      setIsSubmitting(true);
+      await onSubmit(author.trim(), content.trim());
+      setAuthor("");
+      setContent("");
+    } catch (error) {
+      // Error handling is done in the parent component
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -102,9 +112,18 @@ export default function CommentForm({ onSubmit, onCancel }: CommentFormProps) {
             Cancel
           </Button>
         )}
-        <Button type="submit" className="h-9">
-          <Send className="h-4 w-4 mr-2" />
-          Post Comment
+        <Button type="submit" disabled={isSubmitting} className="h-9 disabled:opacity-50 disabled:cursor-not-allowed">
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Posting...
+            </>
+          ) : (
+            <>
+              <Send className="h-4 w-4 mr-2" />
+              Post Comment
+            </>
+          )}
         </Button>
       </div>
     </form>

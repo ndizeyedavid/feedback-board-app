@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUp, MessageCircle, Calendar } from "lucide-react";
+import { ArrowUp, MessageCircle, Calendar, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { CategoryInfo, Feedback } from "@/types/feedback";
@@ -8,8 +8,8 @@ import CommentSection from "./CommentSection";
 interface FeedbackListItemProps {
   feedback: Feedback;
   hasUpvoted: boolean;
-  onUpvote: (id: string) => void;
-  onAddComment: (feedbackId: string, author: string, content: string) => void;
+  onUpvote: (id: string) => Promise<void>;
+  onAddComment: (feedbackId: string, author: string, content: string) => Promise<void>;
 }
 
 const categoryConfig = {
@@ -46,6 +46,7 @@ export default function FeedbackListItem({
   onAddComment,
 }: FeedbackListItemProps) {
   const [showComments, setShowComments] = useState(false);
+  const [isUpvoting, setIsUpvoting] = useState(false);
   const getCategoryInfo = (category: string): CategoryInfo => {
     switch (category) {
       case "gameplay":
@@ -85,10 +86,23 @@ export default function FeedbackListItem({
           <Button
             variant={hasUpvoted ? "default" : "outline"}
             size="sm"
-            onClick={() => onUpvote(feedback.id)}
-            className={`h-10 w-10 p-0 `}
+            onClick={async () => {
+              if (isUpvoting) return;
+              try {
+                setIsUpvoting(true);
+                await onUpvote(feedback.id);
+              } finally {
+                setIsUpvoting(false);
+              }
+            }}
+            disabled={isUpvoting}
+            className="h-10 w-10 p-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ArrowUp className="h-4 w-4" />
+            {isUpvoting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ArrowUp className="h-4 w-4" />
+            )}
           </Button>
           <span className="text-sm font-medium text-muted-foreground">
             {feedback.upvotes}
